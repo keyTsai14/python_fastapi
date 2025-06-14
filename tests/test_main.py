@@ -79,6 +79,15 @@ async def test_done_flag(async_client):
 
 
 @pytest.mark.asyncio
-async def test_due_date(async_client):
-    response = await async_client.post("/tasks", json={"title": "テストタスク", "due_date": "2024-12-01"})
-    assert response.status_code == starlette.status.HTTP_200_OK
+@pytest.mark.parametrize(
+    "input_param, expectation",
+    [
+        ("2024-12-01", starlette.status.HTTP_200_OK),
+        ("2024-12-32", starlette.status.HTTP_422_UNPROCESSABLE_ENTITY),
+        ("2024/12/01", starlette.status.HTTP_422_UNPROCESSABLE_ENTITY),
+        ("2024-1201", starlette.status.HTTP_422_UNPROCESSABLE_ENTITY)
+    ]
+)
+async def test_due_date(input_param, expectation, async_client):
+    response = await async_client.post("/tasks", json={"title": "テストタスク", "due_date": input_param})
+    assert response.status_code == expectation
